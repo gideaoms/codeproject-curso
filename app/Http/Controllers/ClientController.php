@@ -23,6 +23,7 @@ class ClientController extends Controller
      */
     public function __construct(ClientRepository $repository, ClientService $service)
     {
+        echo 'Hello World';
         $this->repository = $repository;
         $this->service = $service;
     }
