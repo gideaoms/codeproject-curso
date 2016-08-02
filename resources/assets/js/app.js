@@ -7,7 +7,7 @@ angular.module('app.controllers', ['ngMessages', 'angular-oauth2']);
 angular.module('app.filters', []);
 angular.module('app.services', ['ngResource']);
 
-app.provider('appConfig', function () {
+app.provider('appConfig', ['$httpParamSerializerProvider', function ($httpParamSerializerProvider) {
     var config = {
         baseUrl: 'http://localhost:8000',
         project: {
@@ -18,6 +18,12 @@ app.provider('appConfig', function () {
             ]
         },
         utils: {
+            transformRequest: function(data) {
+                if (angular.isObject(data)) {
+                    return $httpParamSerializerProvider.$get()(data);
+                }
+                return data;
+            },
             transformResponse: function (data, headers) {
                 var headersGetter = headers();
                 if (headersGetter['content-type'] == 'application/json' || headersGetter['content-type'] == 'text/json') {
@@ -38,11 +44,12 @@ app.provider('appConfig', function () {
             return config;
         }
     };
-});
+}]);
 
 app.config(['$routeProvider', '$httpProvider', 'OAuthProvider', 'OAuthTokenProvider', 'appConfigProvider',
     function ($routeProvider, $httpProvider, OAuthProvider, OAuthTokenProvider, appConfigProvider) {
         $httpProvider.defaults.transformResponse = appConfigProvider.config.utils.transformResponse;
+        $httpProvider.defaults.transformRequest = appConfigProvider.config.utils.transformRequest;
         $routeProvider
                 .when('/login', {
                     templateUrl: 'build/views/login.html',
